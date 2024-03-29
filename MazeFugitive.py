@@ -65,3 +65,7 @@ class MazeFugitive:
 #    have tolerances to accommodate it? It is not necessary to stick to the
 #    center of the corridor, but how can the corners be generalized so that
 #    they are functional no matter where exactly the robot is?
+# 6. A more robust solution could ensure that there is a dynamic correction
+#    of the trajectory, for example equidistance to the walls on both sides.
+#    Also, the state transitions have to be tight. Draw a state diagram and 
+#    distinguish well the alternatives at branching points.
