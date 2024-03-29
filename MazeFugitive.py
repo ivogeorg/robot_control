@@ -66,6 +66,9 @@ class MazeFugitive:
 #    center of the corridor, but how can the corners be generalized so that
 #    they are functional no matter where exactly the robot is?
 # 6. A more robust solution could ensure that there is a dynamic correction
-#    of the trajectory, for example equidistance to the walls on both sides.
-#    Also, the state transitions have to be tight. Draw a state diagram and 
-#    distinguish well the alternatives at branching points.
+#    of the trajectory, for example equidistance to the walls on both sides
+#    while in state CORRIDOR. This will require close monitoring of the 
+#    laser readings and applying corrections to the pose of the robot.
+# 7. For a robust solution, the state transitions have to be both tight and
+#    comprehensive. Draw a state diagram and distinguish well between the 
+#    alternative paths at branching points.
