@@ -18,6 +18,25 @@ class MazeFugitive:
 #    b. Finding the best time to stop and turn, based on a procedure,
 #       similar to the one in (a).
 
+# Notes 1:
+# 1. The hardcoded solution consists of sticking to a minimal set of
+#    pose descriptors: stay as close as possible to the middle but keep
+#    loose criteria; go as close as possible to straight when moving
+#    forward; stop as close as possible to the middle of the corner
+#    "square" and turn as close to 90 degrees as possible; identify the
+#    quazi-states using loose comparisons based on the unit of the
+#    initial distance to one of the walls.
+# 2. This solution is essentially a procedure with single or looped
+#    continuous actions. For example, the following may be the pseudo-
+#    code of the solution:
+#    1. (cont) Move forward until in the middle of the corner square.
+#    2. (single) Turn 90 degrees clockwise.
+#    3. (cont) Move forward until in the middle of the corner square.
+#    4. (single) Turn 90 degrees clockwise.
+#    5. (cont) Move forward until in the middle of the corner square.
+#    6. (single) Turn 90 degrees counterclockwise.
+#    7. (cont) Move forward until all three directions are inf.
+
 # Notes 2:
 # 1. No need to rotate to get a 360 deg distance reading. Start with the
 #    current position in the middle of the corridor and current orientation
