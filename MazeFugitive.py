@@ -1,9 +1,6 @@
+from math import isinf, degrees, radians
+from geometry_msgs.msg import Twist, Point, Quaternion
 from robot_control_class import RobotControl
-
-
-class MazeFugitive:
-    pass
-
 
 # Notes:
 # 1. There can be two solutions, one hard-coded and one universal.
@@ -72,3 +69,123 @@ class MazeFugitive:
 # 7. For a robust solution, the state transitions have to be both tight and
 #    comprehensive. Draw a state diagram and distinguish well between the 
 #    alternative paths at branching points.
+
+# LIDARs:
+# 1. Turtlebot 
+#    - kobuki
+#    - counterclockwise
+#    - range 180 degrees
+#    - 720 points
+#    - indices                 360
+#                               ^
+#                               |
+#                               |
+#                     719 <----bot----> 0 
+# 2. Summit XL
+#    - hokuyo_base 
+
+class MazeFugitive(RobotControl):
+
+    # Assume Turtlebot
+    def __init__(self, speed) -> None:
+        super().__init__()
+        self.speed = speed
+        # distance from wall
+        right_dist = self.get_laser(0)
+        left_dist = self.get_laser(719)
+        self.dist = (right_dist + left_dist) / 1.5
+        # last rotation from odometry
+        point = Point()
+        (point, rotation) = self.get_odom()
+        self.last_rotation = rotation
+
+
+    def move_straight_distance(self, speed, dist) -> None:
+        """Move forward until front laser reads dist"""
+        # Initilize velocities
+        self.cmd.linear.y = 0
+        self.cmd.linear.z = 0
+        self.cmd.angular.x = 0
+        self.cmd.angular.y = 0
+        self.cmd.angular.z = 0
+
+        self.cmd.linear.x = speed
+
+        # loop until dist, note sleep(1) in method
+        while (self.dist <= self.get_front_laser()):
+
+            # Publish the velocity
+            self.vel_publisher.publish(self.cmd)
+            self.summit_vel_publisher.publish(self.cmd)
+
+        # set velocity to zero to stop the robot
+        self.stop_robot()
+
+        print("Robot stopped at " + str(self.get_front_laser()) + "(dist = " + str(self.dist) + ")")
+
+
+    def move_out(self, speed) -> None:
+        """Move forward until front and side lasers read inf"""
+        # Initilize velocities
+        self.cmd.linear.y = 0
+        self.cmd.linear.z = 0
+        self.cmd.angular.x = 0
+        self.cmd.angular.y = 0
+        self.cmd.angular.z = 0
+
+        self.cmd.linear.x = speed
+
+        # loop until dist, note sleep(1) in method
+        while (not isinf(self.get_laser(0)) and
+               not isinf(self.get_laser(360)) and
+               not isinf(self.get_laser(719))):
+
+            # Publish the velocity
+            self.vel_publisher.publish(self.cmd)
+            self.summit_vel_publisher.publish(self.cmd)
+
+        # set velocity to zero to stop the robot
+        self.stop_robot()
+
+        print("Robot stopped outside")
+
+    def rotate_corrected(self, deg) -> None:
+        """Attempt to correct for rotational drift"""
+        point = Point()
+        (point, rotation) = self.get_odom()
+        self.rotate(deg - degrees(rotation - self.last_rotation))
+        (point, rotation) = self.get_odom()
+        self.last_rotation = rotation
+
+
+    def hardcoded_maze_escape(self, speed, dist) -> None:
+        # Hardcoded trajectory assuming robot pose
+        self.move_straight_distance(speed, dist)
+        self.rotate_corrected(-90.0)
+        self.move_straight_distance(speed, dist)
+        self.rotate_corrected(-90.0)
+        self.move_straight_distance(speed, dist)
+        self.rotate_corrected(90.0)
+        self.move_out(speed)
+
+
+if __name__ == "__main__":
+    robot = MazeFugitive(0.3)
+    # point = Point()
+    # (point, rotation) = robot.get_odom()
+    # print("Odometry:")
+    # print(robot.get_odom())
+    # print("Odometry point:")
+    # print(point)
+    # print("Odometry rotation:")
+    # print(rotation)
+    # robot.move_straight_distance(robot.speed, robot.dist)
+    # (point, rotation) = robot.get_odom()
+    # print("Odometry:")
+    # print(robot.get_odom())
+    # print("Odometry point:")
+    # print(point)
+    # print("Odometry rotation:")
+    # print(rotation)
+    robot.hardcoded_maze_escape(robot.speed, robot.dist)
+
